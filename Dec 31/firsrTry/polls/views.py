@@ -1,9 +1,10 @@
 from django.shortcuts import render, get_object_or_404
 
 # Create your views here.
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
-from . models import Question
+from django.urls import reverse
+from . models import Choise, Question
 
 
 # return questions date from Question date saved
@@ -31,3 +32,22 @@ def result(request, question_id):
 
 def vote(request, quesiton_id):
     return HttpResponse(f"You're voting at the question {quesiton_id}")
+
+def vote(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    try:
+        selected_choise = question.choise_set.get(pk=request.port['chosise'])
+    except (KeyError, Choise.DoesNotExist):
+        # redisplay the question voting form.
+        return render(request, "polls/detail.html", {
+            "question" : question,
+            "error_message" : "You didn't select a choise.",
+        })
+    else:
+        selected_choise += 1
+        selected_choise.save()
+        # Always retunr an HttpRepsonseRedirect after successfully dealing
+        # with post data. this prevents data from being posted twice if a 
+        # hits the back button
+        return HttpResponseRedirect(reverse('polls.results', 
+            args=(question.id,)))
