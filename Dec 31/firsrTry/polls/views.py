@@ -6,7 +6,6 @@ from django.template import loader
 from . models import Question
 
 
-
 # return questions date from Question date saved
 def index(request):
     latest_question_list = Question.objects.order_by("-pub-date")[:5]
