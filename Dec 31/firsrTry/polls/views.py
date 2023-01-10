@@ -5,6 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.urls import reverse
 from . models import Choise, Question
+from django.views import generic
 
 
 # return questions date from Question date saved
@@ -27,16 +28,34 @@ def detail(request, question_id):
     return render(request, "polls/detail.html", {'quesiton': question})
 
 def result(request, question_id):
-    reponse = f"You're looking at the result of question {question_id}"
-    return HttpResponse(reponse)
+    response = f"You're looking at the result of question {question_id}"
+    return HttpResponse(response)
 
 def vote(request, quesiton_id):
     return HttpResponse(f"You're voting at the question {quesiton_id}")
 
+
+class IndexView(generic.ListView):
+    template_name = "polls/index.html"
+    context_object_name = "latest_question_list"
+
+    def get_queryset(self):
+        """ return the last file published quesiton """
+        return Question.objects.order_by("-pub_date")[:5]
+
+class DetailView(generic.DetailView):
+    model = Question
+    template_name = "polls/details.html"
+
+class ResultsView(generic.DetailView):
+    model = Question
+    template_name = "polls/results.html"
+
+
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     try:
-        selected_choise = question.choise_set.get(pk=request.port['chosise'])
+        selected_choise = question.choise_set.get(pk=request.port['choises'])
     except (KeyError, Choise.DoesNotExist):
         # redisplay the question voting form.
         return render(request, "polls/detail.html", {
